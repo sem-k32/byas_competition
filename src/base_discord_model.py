@@ -14,7 +14,7 @@ class BaseDiscordModel(ABC):
     ):
         ...
 
-    def find_discord(
+    def compute_discord_scores(
             self,
             window_size: int, 
     ) -> np.ndarray:
@@ -50,6 +50,49 @@ class BaseDiscordModel(ABC):
             window_center += window_size
 
         return discord_scores
+    
+
+    def find_discordance_point(
+        self,
+        window_size: int
+    ):
+        """
+            Dichotomy method based on mean diffrences of discord scores between series parts
+        """
+        discord_scores = self.compute_discord_scores(window_size)
+
+        left_bound = 0
+        right_bound = len(discord_scores) - 1
+
+        while right_bound - left_bound > 4:
+            lefter_point = left_bound + (right_bound - left_bound) // 4
+            righter_point = right_bound - (right_bound - left_bound) // 4
+
+            mean_diff_1 = np.mean(discord_scores[left_bound:lefter_point]) - np.mean(discord_scores[lefter_point:right_bound])
+            mean_diff_1 = np.abs(mean_diff_1)
+            mean_diff_2 = np.mean(discord_scores[left_bound:righter_point]) - np.mean(discord_scores[righter_point:right_bound])
+            mean_diff_2 = np.abs(mean_diff_2)
+
+            if mean_diff_1 > mean_diff_2:
+                right_bound = righter_point
+            else:
+                left_bound = lefter_point
+
+        final_diffrence = np.abs(np.mean(discord_scores[:left_bound]) - np.mean(discord_scores[right_bound:]))
+
+        if final_diffrence > 0.4:
+            discord_point = left_bound + (right_bound - left_bound) // 2
+        else:
+            discord_point = -1
+
+        # compute final point in time
+        if discord_point == -1:
+            discord_point_ts = -1
+        else:
+            discord_point_ts = (window_size - 1) + discord_point  * window_size
+
+        # return point and level of confidence
+        return discord_point_ts, final_diffrence
 
 
 """

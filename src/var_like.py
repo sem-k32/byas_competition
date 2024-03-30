@@ -46,8 +46,8 @@ class VarLikeModel(BaseDiscordModel):
             discord_score = linalg.norm(left_result.polynomial_ar - right_result.polynomial_ar)
             discord_score += linalg.norm(left_result.polynomial_ma - right_result.polynomial_ma)
         else:
-            model_left = VAR(left_part.T)
-            model_right = VAR(right_part.T)
+            model_left = VAR(left_part)
+            model_right = VAR(right_part)
 
             left_result = model_left.fit(
                 maxlags=1
