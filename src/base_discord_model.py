@@ -64,6 +64,8 @@ class BaseDiscordModel(ABC):
         left_bound = 0
         right_bound = len(discord_scores) - 1
 
+        series_len = self.time_series.shape[0]
+
         while right_bound - left_bound > 4:
             lefter_point = left_bound + (right_bound - left_bound) // 4
             righter_point = right_bound - (right_bound - left_bound) // 4
@@ -83,11 +85,11 @@ class BaseDiscordModel(ABC):
         if final_diffrence > 0.4:
             discord_point = left_bound + (right_bound - left_bound) // 2
         else:
-            discord_point = -1
+            discord_point = series_len + 1
 
         # compute final point in time
-        if discord_point == -1:
-            discord_point_ts = -1
+        if discord_point == series_len + 1:
+            discord_point_ts = series_len + 1
         else:
             discord_point_ts = (window_size - 1) + discord_point  * window_size
 
